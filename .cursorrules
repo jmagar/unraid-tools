@@ -1,0 +1,69 @@
+# Unraid Development Rules
+
+## System Architecture Quirks
+- **RAM Disk OS**: Most system files run from RAM and are wiped on reboot
+- **No Package Manager**: Cannot use apt, yum, pacman, etc. Must use direct binary downloads
+- **Slackware Base**: Uses Slackware Linux as foundation, not Ubuntu/CentOS/etc
+- **Flash Boot**: System boots from USB flash drive with limited write cycles
+
+## Persistent Storage Locations
+- `/mnt/user/` - Main user data area, fully persistent
+- `/boot/` - Flash drive, minimize writes, config files only
+- `/usr/local/` - Session-persistent (wiped on reboot, but can be repopulated by User Scripts)
+- **AVOID**: `/usr/bin/`, `/bin/`, `/tmp/` - System locations, avoid modification
+
+## Installation Strategies  
+- **Session Tools**: Download to `/usr/local/bin/` via User Scripts on array start (no PATH setup needed)
+- **Persistent Data**: Use `/mnt/user/appdata/[app]/` for data that must survive reboots
+- **Config Files**: Store in `/boot/config/` for system configs
+
+## User Scripts Plugin
+- **Purpose**: Run custom scripts at system events
+- **Location**: Scripts stored in `/boot/config/plugins/user.scripts/`
+- **Execution**: Runs with root privileges
+- **Triggers**: Array start/stop, schedule, manual
+- **Logging**: Output visible in Unraid web interface
+
+## Binary Requirements
+- **Architecture**: Must be x86_64 Linux
+- **Static Linking**: Prefer static binaries (no external dependencies)
+- **Musl vs Glibc**: Both work, musl often smaller/simpler
+- **Permissions**: Always `chmod +x` after installation
+
+## Network and Downloads
+- **GitHub Releases**: Preferred source for tools
+- **wget Available**: Use `wget -q` for quiet downloads
+- **SSL/TLS**: HTTPS works by default
+- **DNS**: Standard DNS resolution available
+
+## Development Best Practices
+- **Test on Clean System**: Unraid systems vary, test installations fresh
+- **Handle Network Failures**: Downloads may fail, plan accordingly  
+- **Minimize Flash Writes**: Avoid frequent writes to `/boot/`
+- **Version Checking**: Check if tools already installed to avoid redundant work
+- **Cleanup Temps**: Always clean up `/tmp/` downloads
+
+## Common Tools Available
+- bash, wget, tar, gzip, chmod, mv, cp, rm
+- Basic utilities: ls, ps, top, df, du, find, grep
+- **Missing**: Modern alternatives like ripgrep, fd, bat, exa, etc.
+
+## File System Constraints
+- **Case Sensitive**: Unlike some NAS systems, Unraid is case-sensitive
+- **Permissions**: Standard Linux permissions apply
+- **Symlinks**: Supported, but be cautious across mount points
+- **PATH**: Standard Linux PATH, `/usr/local/bin` included by default
+
+## Docker Integration
+- **Docker Available**: Full Docker support via Unraid interface
+- **Container Persistence**: Container data should use `/mnt/user/appdata/`
+- **Host Access**: Containers can access host filesystem with proper mapping
+- **Networking**: Standard Docker networking, with Unraid GUI management
+
+## When Working on Unraid Projects:
+1. Always consider persistence - will this survive a reboot?
+2. Prefer static binaries over compiled solutions
+3. Use User Scripts for automation, not cron directly  
+4. Test download/install procedures on actual Unraid when possible
+5. Document installation steps clearly for users
+6. Consider Unraid version compatibility (6.x vs 7.x differences)
